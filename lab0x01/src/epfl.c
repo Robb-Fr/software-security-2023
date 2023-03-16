@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
   while (j < width) {
     unsigned i = top_left_y;
     // Check if we are in a column to draw
-    if (j >= top_left_x && j < top_left_x + logo_width) {
+    if (j >= top_left_x && j < top_left_x + logo_width * size) {
       // Find column index in logo
       unsigned j_logo = (j - top_left_x) / size;
       // Ensure that we do not go below the bottom of the picture
