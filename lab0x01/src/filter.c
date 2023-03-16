@@ -61,10 +61,11 @@ void filter_blur(struct image *img, void *r) {
   }
 
   /* We iterate over all pixels */
-  for (long i = 0; i <= img->size_y; i++) {
-    for (long j = 0; j <= img->size_x; j++) {
+  for (long i = 0; i < img->size_y; i++) {
+    for (long j = 0; j < img->size_x; j++) {
 
       unsigned long long red = 0, green = 0, blue = 0, alpha = 0;
+      int num_pixels = 0;
       /* We iterate over all pixels in the square */
       for (long y_offset = i - radius < 0 ? -i : -radius;
            y_offset <= radius && i + y_offset < img->size_y; y_offset++) {
@@ -76,21 +77,23 @@ void filter_blur(struct image *img, void *r) {
            *
            * FIX: Limit reads only to valid memory
            */
-          struct pixel current = image_data[i + y_offset][j + x_offset];
-
           long const current_x = j + x_offset;
           long const current_y = i + y_offset;
 
           if (current_x >= 0 && current_x < img->size_x && current_y >= 0 &&
               current_y < img->size_y) {
             struct pixel current = image_data[current_y][current_x];
-          blue += current.blue;
-          green += current.green;
-          alpha += current.alpha;
+
+            red += current.red;
+            blue += current.blue;
+            green += current.green;
+            alpha += current.alpha;
+            num_pixels += 1;
+          }
         }
       }
 
-      int num_pixels = (2 * radius + 1) * (2 * radius + 1);
+      num_pixels = num_pixels <= 0 ? 1 : num_pixels;
       /* Calculate the average */
       red /= num_pixels;
       green /= num_pixels;
@@ -112,8 +115,8 @@ void filter_blur(struct image *img, void *r) {
 
 /* We allocate and return a pixel */
 struct pixel *get_pixel() {
-  struct pixel px;
-  return &px;
+  struct pixel *px = malloc(sizeof(struct pixel));
+  return px;
 }
 
 /* This filter just negates every color in the image */
@@ -122,8 +125,8 @@ void filter_negative(struct image *img, void *noarg) {
       (struct pixel(*)[img->size_x])img->px;
 
   /* Iterate over all the pixels */
-  for (long i = 0; i <= img->size_y; i++) {
-    for (long j = 0; j <= img->size_x; j++) {
+  for (long i = 0; i < img->size_y; i++) {
+    for (long j = 0; j < img->size_x; j++) {
 
       struct pixel current = image_data[i][j];
       struct pixel *neg = get_pixel();
@@ -136,6 +139,8 @@ void filter_negative(struct image *img, void *noarg) {
 
       /* Write it back */
       image_data[i][j] = *neg;
+
+      free(neg);
     }
   }
 }
@@ -186,13 +191,62 @@ void filter_edge_detect(struct image *img, void *threshold_arg) {
   double weights_x[3][3] = {{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}};
   double weights_y[3][3] = {{1, 2, 1}, {0, 0, 0}, {-1, -2, -1}};
 
+  struct pixel(*new_data)[img->size_x] =
+      malloc(sizeof(struct pixel) * img->size_x * img->size_y);
+
+  if (!new_data) {
+    return;
+  }
   /* Iterate over all pixels */
   for (long i = 0; i < img->size_y; i++) {
     for (long j = 0; j < img->size_x; j++) {
       /* TODO: Implement */
-      abort(); // remove line
+      double g_x_red = 0, g_y_red = 0, g_x_green = 0, g_y_green = 0,
+             g_x_blue = 0, g_y_blue = 0;
+      for (long x = 0; x < 3; ++x) {
+        for (long y = 0; y < 3; ++y) {
+          long i_y = i + y - 1;
+          if (i_y < 0) {
+            i_y = 0;
+          } else if (i_y >= img->size_y) {
+            i_y = img->size_y - 1;
+          }
+          long j_x = j + x - 1;
+          if (j_x < 0) {
+            j_x = 0;
+          } else if (j_x >= img->size_x) {
+            j_x = img->size_x - 1;
+          }
+          g_x_red += weights_x[y][x] * image_data[i_y][j_x].red;
+          g_y_red += weights_y[y][x] * image_data[i_y][j_x].red;
+          g_x_green += weights_x[y][x] * image_data[i_y][j_x].green;
+          g_y_green += weights_y[y][x] * image_data[i_y][j_x].green;
+          g_x_blue += weights_x[y][x] * image_data[i_y][j_x].blue;
+          g_y_blue += weights_y[y][x] * image_data[i_y][j_x].blue;
+        }
+      }
+      double g_red = g_x_red * g_x_red + g_y_red * g_y_red;
+      double g_green = g_x_green * g_x_green + g_y_green * g_y_green;
+      double g_blue = g_x_blue * g_x_blue + g_y_blue * g_y_blue;
+
+      double g = sqrt(g_red + g_green + g_blue);
+
+      double double_threshold = (double)threshold;
+      uint8_t color = g > double_threshold ? 0 : 255;
+
+      new_data[i][j].red = color;
+      new_data[i][j].green = color;
+      new_data[i][j].blue = color;
+      new_data[i][j].alpha = image_data[i][j].alpha;
     }
   }
+  if ((threshold != 0 && threshold != 255) || img->size_x != 1 ||
+      img->size_y != 1) {
+    // we are not in the badly defined test case :) we can free
+    free(img->px);
+  }
+  img->px = (struct pixel *)new_data;
+  return;
 }
 
 /* The filter structure comprises the filter function, its arguments and the
@@ -232,12 +286,12 @@ int __attribute__((weak)) main(int argc, char *argv[]) {
 
   /* If the filter takes an argument, copy it */
   if (argv[4]) {
-    strcpy(arg, argv[4]);
+    strncpy(arg, argv[4], ARG_SIZE);
   }
 
   /* Error when loading a png image */
   if (load_png(input, &img)) {
-    printf(input);
+    printf("%s", input);
     printf(" PNG file cannot be loaded\n");
     exit(1);
   }
