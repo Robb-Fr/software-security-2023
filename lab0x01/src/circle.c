@@ -53,18 +53,22 @@ int main(int argc, char *argv[]) {
     int y = round(center_y +
                   sqrt(radius * radius - (x - center_x) * (x - center_x)));
 
-    image_data[y][x].red = (hex_color & 0xff0000) >> 16;
-    image_data[y][x].green = (hex_color & 0x00ff00) >> 8;
-    image_data[y][x].blue = (hex_color & 0x0000ff);
-    image_data[y][x].alpha = 0xff;
+    if (x >= 0 && y >= 0 && x < width && y < height) {
+      image_data[y][x].red = (hex_color & 0xff0000) >> 16;
+      image_data[y][x].green = (hex_color & 0x00ff00) >> 8;
+      image_data[y][x].blue = (hex_color & 0x0000ff);
+      image_data[y][x].alpha = 0xff;
+    }
 
     y = round(center_y -
               sqrt(radius * radius - (x - center_x) * (x - center_x)));
 
-    image_data[y][x].red = (hex_color & 0xff0000) >> 16;
-    image_data[y][x].green = (hex_color & 0x00ff00) >> 8;
-    image_data[y][x].blue = (hex_color & 0x0000ff);
-    image_data[y][x].alpha = 0xff;
+    if (x >= 0 && y >= 0 && x < width && y < height) {
+      image_data[y][x].red = (hex_color & 0xff0000) >> 16;
+      image_data[y][x].green = (hex_color & 0x00ff00) >> 8;
+      image_data[y][x].blue = (hex_color & 0x0000ff);
+      image_data[y][x].alpha = 0xff;
+    }
   }
 
   /* There are going to be some ugly gaps in the image, so we will repeat the
@@ -76,8 +80,9 @@ int main(int argc, char *argv[]) {
     int x = round(center_x +
                   sqrt(radius * radius - (y - center_y) * (y - center_y)));
 
-    image_data[y][x].red = (hex_color & 0xff0000) >> 16;
+    if (x >= 0 && y >= 0 && x < width && y < height) {
       image_data[y][x].red = (hex_color & 0xff0000) >> 16;
+      image_data[y][x].green = (hex_color & 0x00ff00) >> 8;
       image_data[y][x].blue = (hex_color & 0x0000ff);
       image_data[y][x].alpha = 0xff;
     }
@@ -85,14 +90,16 @@ int main(int argc, char *argv[]) {
     x = round(center_x -
               sqrt(radius * radius - (y - center_y) * (y - center_y)));
 
-    image_data[y][x].red = (hex_color & 0xff0000) >> 16;
-    image_data[y][x].green = (hex_color & 0x00ff00) >> 8;
-    image_data[y][x].blue = (hex_color & 0x0000ff);
-    image_data[y][x].alpha = 0xff;
+    if (x >= 0 && y >= 0 && x < width && y < height) {
+      image_data[y][x].red = (hex_color & 0xff0000) >> 16;
+      image_data[y][x].green = (hex_color & 0x00ff00) >> 8;
+      image_data[y][x].blue = (hex_color & 0x0000ff);
+      image_data[y][x].alpha = 0xff;
+    }
   }
 
-  store_png(output, img, NULL, 0);
+  int return_code = store_png(output, img, NULL, 0);
   free(img->px);
   free(img);
-  return 0;
+  return return_code;
 }
