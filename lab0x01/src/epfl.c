@@ -67,6 +67,13 @@ int main(int argc, char *argv[]) {
   unsigned char logo_adj[15] = {0, 0,   0,  0, -15, 11, -12, 0,
                                 4, -16, 15, 0, -12, 20, 24};
 
+  // Overflow checking
+  if (logo_width > INT32_MAX / size || logo_height > INT32_MAX / size) {
+    free(img->px);
+    free(img);
+    return 1;
+  }
+
   // We'll go column by column, painting the logo when we are in the correct
   // columns.
   unsigned j = top_left_x;
