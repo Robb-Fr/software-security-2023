@@ -1,9 +1,11 @@
 # Lab0x01 Instructions - Code Review and Unit Tests
 
 Submission deadlines:
+
 - Final: 16th March 2023 - 22:59:59 CET
 
 This lab consists of two parts:
+
 - Review source code and find bugs
 - Familiarize with unit tests both for functionality and edge cases
 
@@ -11,6 +13,7 @@ This lab consists of two parts:
 
 The lab is graded over 30 points with the subsequent division, each explained in
 detail in its corresponding section.
+
 - 20 points for bug finding
 - 10 points for unit tests
 
@@ -29,6 +32,7 @@ running `zip -r <sciper>.zip reports src`), an example valid `<sciper>` is
 
 The code needed for this assignment is provided as an archive with a single
 top-level directory, `src/`.
+
 1. Extract the archive
 2. Apply your fixes directly in `src/`
 3. Add a new sibling directory, `reports/`
@@ -40,6 +44,7 @@ top-level directory, `src/`.
 
 Please follow the following checklist before submission. Do not leave it till
 the last minute.
+
 - The folder structure should be EXACTLY as provided (see below)
 - No source file names should be modified
 - Remove all compiled/generated `.o`,`.a` files and executables (`make clean` should
@@ -66,6 +71,7 @@ If you have any doubts, don't hesitate to contact with the TA team earlier
 rather than later.
 
 # Y0L0 PNG library
+
 ## Utility Programs Description
 
 Several programs have been implemented to showcase the capabilities of the Y0L0
@@ -137,6 +143,7 @@ bottom_right_y hex_color`
 Output: Draws the specified rectangle over an input image.
 
 ### EPFL
+
 Usage: `epfl input_file output_file top_left_x top_left_y size hex_color`
 
 Output: Draws the EPFL logo in any color (please choose `#fe0002`) over the input image.
@@ -196,7 +203,6 @@ Y0L0 PNG chunks have the following structure:
   data
 
 All fields are consecutive and in the given order.
-
 
 #### IHDR Chunk
 
@@ -280,7 +286,6 @@ All fields of structures are consecutive and in the given order.
 IEND chunk appears as the last chunk in the file. Its type is `IEND`. It stores
 no data and the length field is 0.
 
-
 ## PNG Parser Interface
 
 PNG Parser interface consists of functions:
@@ -290,7 +295,7 @@ PNG Parser interface consists of functions:
   to by img. Please remember to free both img and img->px after you are finished
   using the image. Also remember to do it in the correct order. This function
   returns 0 on success and a non-zero value on failure.
- 
+
 - `int store_png(char *filename, struct image *img, struct pixel *palette,
   unsigned palette_length)` which stores an image into the file. If the palette
   argument is NULL, the image is stored in the RGBA format. Otherwise, the
@@ -308,6 +313,7 @@ struct image {
 ```
 
 - `struct pixel` represents a pixel as a RGBA tuple.
+
 ```
 struct pixel {
     uint8_t red;
@@ -318,6 +324,7 @@ struct pixel {
 ```
 
 # Code Review
+
 ## Bugs and Fixes
 
 In this lab, your task is to review the code in order to find bugs, trigger them,
@@ -543,12 +550,10 @@ can look at other tests for the syntax for `tcase_add_loop_test`.
 > Note: For tests using `tcase_add_loop_test`, there is an implicitly defined
 > variable `_i` which is the iteration of the test.
 
-
 ### Unit test for grayscale filter: edge cases
 
 There is already one implemented test for grayscale edge cases:
 `grayscale_double_limit`. No further work necessary.
-
 
 ## Additional filters
 
@@ -634,6 +639,7 @@ with the command `set follow-fork-mode child`. This must be done just before the
 test which you want to debug.
 
 Example script:
+
 ```
 file tests
 
@@ -677,6 +683,7 @@ Then, we issue the `run` command, which starts executing the `tests` executable.
 
 When it hits the breakpoint, `gdb` runs the commands set on `fork` breakpoint.
 Let us take a better look at what these commands were:
+
 - it changes `gdb`'s forking mode to debug the child.
 - `info proc` shows that we are still running in the parent.
 - sets a catchpoint, which is used to stop just before the `clone` syscall.
@@ -686,6 +693,7 @@ for it.  The `commands 2` block shows these. We'll ignore them for a bit.
 
 The final `continue` command tells `gdb` to resume execution.  This will continue until
 it hits the catchpoint, and executes the commands we set up earlier:
+
 - sets up breakpoints for all tests (you can shorten this list, only breaking on
   the particular test you are interested in)
 - `continue` command, which resumes execution after the catchpoint
@@ -698,4 +706,3 @@ corresponding breakpoint is hit.
 
 The correct implementation of the edge filter will be worth 3 points, and the
 implementation of the rest of the unit tests will count 1 point each.
-
