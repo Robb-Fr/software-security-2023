@@ -23,7 +23,9 @@ int main(int argc, char *argv[]) {
 
   /* Decode the top left of the EPFL logo. Invalid values are decoded as 0 */
   int top_left_x = atoi(argv[3]);
+  top_left_x = top_left_x < 0 ? 0 : top_left_x;
   int top_left_y = atoi(argv[4]);
+  top_left_y = top_left_y < 0 ? 0 : top_left_y;
 
   /* Invalid size will just be interpreted as 1 */
   int size = atoi(argv[5]);
@@ -80,7 +82,7 @@ int main(int argc, char *argv[]) {
   while (j < width) {
     unsigned i = top_left_y;
     // Check if we are in a column to draw
-    if (j >= top_left_x && j < top_left_x + logo_width) {
+    if (j >= top_left_x && j < top_left_x + logo_width * size) {
       // Find column index in logo
       unsigned j_logo = (j - top_left_x) / size;
       // Ensure that we do not go below the bottom of the picture
