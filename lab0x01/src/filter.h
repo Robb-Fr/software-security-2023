@@ -8,3 +8,4 @@ void filter_sepia(struct image *img, void *depth_arg);
 void filter_bw(struct image *img, void *threshold_arg);
 void filter_edge_detect(struct image *img, void *threshold_arg);
 void filter_keying(struct image *img, void *arg);
+void filter_specific_color(struct image *img, void *specific_color);
