@@ -30,8 +30,18 @@ int main(int argc, char *argv[]) {
   unsigned short height = img->size_y;
   unsigned short width = img->size_x;
 
+  /* Overflow checking */
+  if (width > USHRT_MAX / factor || height > USHRT_MAX / factor) {
+    goto error_memory;
+  }
+
   unsigned short new_height = (unsigned)(height * factor);
   unsigned short new_width = (unsigned)(width * factor);
+
+  /* Overflow checking */
+  if (new_height > SIZE_MAX / new_width || new_height <= 0 || new_width <= 0) {
+    goto error_memory;
+  }
 
   size_t n_pixels = new_height * new_width;
 
@@ -45,7 +55,7 @@ int main(int argc, char *argv[]) {
   new_img->size_x = new_width;
   new_img->size_y = new_height;
 
-  new_img->px = malloc(n_pixels + sizeof(struct pixel));
+  new_img->px = malloc(n_pixels * sizeof(struct pixel));
 
   if (!new_img->px) {
     goto error_memory_img;
