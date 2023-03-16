@@ -88,7 +88,6 @@ int main(int argc, char *argv[]) {
 
   img->px = malloc(sizeof(struct pixel) * n_pixels);
   if (!img->px) {
-    free(img);
     goto error_img;
   }
 
