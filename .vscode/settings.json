@@ -1,0 +1,26 @@
+{
+    "cSpell.words": [
+        "catchpoint",
+        "checkcode",
+        "libc",
+        "libpngparser",
+        "libthread",
+        "malloc",
+        "multibyte",
+        "nullptr",
+        "pngparser",
+        "RGBA",
+        "scanline",
+        "SIGSEGV",
+        "struct",
+        "subgradients",
+        "tcase",
+        "testsuite"
+    ],
+    "C_Cpp.clang_format_fallbackStyle": "LLVM",
+    "C_Cpp.clang_format_style": "LLVM",
+    "files.associations": {
+        "string.h": "c"
+    },
+    "cmake.configureOnOpen": true
+}
