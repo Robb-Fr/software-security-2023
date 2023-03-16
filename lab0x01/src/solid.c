@@ -14,7 +14,9 @@ struct pixel *allocate_palette() {
 int main(int argc, char *argv[]) {
   struct image *img = NULL;
   struct pixel *palette = allocate_palette();
-
+  if (!palette) {
+    goto error_mem;
+  }
   /*
    * goto statements should be used only in two cases:
    *
@@ -70,7 +72,7 @@ int main(int argc, char *argv[]) {
   /* After calling malloc we must check if it was successful */
   img = malloc(sizeof(struct image));
   if (!img) {
-    goto error_mem;
+    goto error_palette;
   }
 
   img->px = malloc(sizeof(struct pixel) * n_pixels);
@@ -104,6 +106,7 @@ int main(int argc, char *argv[]) {
     goto error_px;
   }
 
+  free(palette);
   free(img->px);
   free(img);
 
@@ -120,9 +123,14 @@ int main(int argc, char *argv[]) {
    * By calling fflush we force the program to output "Size " right away
    */
   fflush(stdout);
-  strcat(command, "stat -c %s ");
-  strncat(command, output_name, OUTPUT_NAME_SIZE);
-  system(command);
+  FILE *fp = fopen(output_name, "r");
+  if (fp) {
+    fseek(fp, 0L, SEEK_END);
+    printf("%ld \n", ftell(fp));
+    free(fp);
+  } else {
+    printf("Could not read the size");
+  }
 
   return 0;
 
@@ -139,6 +147,8 @@ error_px:
   free(img->px);
 error_img:
   free(img);
+error_palette:
+  free(palette);
 error_mem:
   printf("Couldn't allocate memory\n");
   return 1;
