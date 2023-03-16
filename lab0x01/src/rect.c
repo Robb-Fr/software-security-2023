@@ -31,8 +31,8 @@ int main(int argc, char *argv[]) {
    */
 
   char *end_ptr;
-  long hex_color = strtol(argv[8], &end_ptr, 16);
-  if (*end_ptr || strlen(argv[8]) != 6 || hex_color < 0) {
+  long hex_color = strtol(argv[7], &end_ptr, 16);
+  if (*end_ptr || strlen(argv[7]) != 6 || hex_color < 0) {
     hex_color = 0;
   }
 
@@ -77,13 +77,14 @@ int main(int argc, char *argv[]) {
         image_data[i][j].blue = (hex_color & 0x0000ff);
         image_data[i][j].alpha = 0xff;
       }
-      i++;
       j++;
     }
+    i++;
+    j = 0;
   }
 
-  store_png(output, img, NULL, 0);
+  int return_code = store_png(output, img, NULL, 0);
   free(img->px);
   free(img);
-  return 0;
+  return return_code;
 }
