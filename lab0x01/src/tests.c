@@ -183,7 +183,28 @@ char *grayscale_output[] = {"test_imgs/desert_gray.png",
 START_TEST(grayscale_examples) {
   double weights[] = {0.2125, 0.7154, 0.0721};
   /* TODO: Implement */
-  ck_assert_uint_eq(0, 1); // remove line
+  struct image *source, *output, source_dup;
+  ck_assert_int_eq(load_png(grayscale_sources[_i], &source), 0);
+  ck_assert_int_eq(load_png(grayscale_output[_i], &output), 0);
+  source_dup = duplicate_img(*source);
+
+  filter_grayscale(&source_dup, &weights);
+
+  ck_assert_uint_eq(source->size_x, output->size_x);
+  ck_assert_uint_eq(source->size_y, output->size_y);
+  ck_assert_uint_eq(source_dup.size_x, output->size_x);
+  ck_assert_uint_eq(source_dup.size_y, output->size_y);
+  for (size_t i = 0; i < output->size_x * output->size_y; ++i) {
+    ck_assert_uint_eq(source_dup.px[i].red, output->px[i].red);
+    ck_assert_uint_eq(source_dup.px[i].green, output->px[i].green);
+    ck_assert_uint_eq(source_dup.px[i].blue, output->px[i].blue);
+    ck_assert_uint_eq(source->px[i].alpha, output->px[i].alpha);
+  }
+  free(source_dup.px);
+  free(source->px);
+  free(output->px);
+  free(source);
+  free(output);
 }
 END_TEST
 
@@ -192,14 +213,47 @@ END_TEST
  * The alpha channel needs to be intact in both cases */
 START_TEST(negative_functionality) {
   /* TODO: Implement */
-  ck_assert_uint_eq(0, 1); // remove line
+  srand(time(NULL) ^ getpid());
+
+  /* Generate random png image */
+  struct image img = generate_rand_img();
+  for (int i = 0; i < img.size_x * img.size_y; ++i) {
+    img.px[i].red = 0;
+    img.px[i].green = 0;
+    img.px[i].blue = 0;
+    img.px[i].alpha = 128;
+  }
+
+  filter_negative(&img, NULL);
+
+  for (int i = 0; i < img.size_x * img.size_y; ++i) {
+    ck_assert_uint_eq(img.px[i].red, 255);
+    ck_assert_uint_eq(img.px[i].green, 255);
+    ck_assert_uint_eq(img.px[i].blue, 255);
+    ck_assert_uint_eq(img.px[i].alpha, 128);
+  }
+
+  filter_negative(&img, NULL);
+
+  for (int i = 0; i < img.size_x * img.size_y; ++i) {
+    ck_assert_uint_eq(img.px[i].red, 0);
+    ck_assert_uint_eq(img.px[i].green, 0);
+    ck_assert_uint_eq(img.px[i].blue, 0);
+    ck_assert_uint_eq(img.px[i].alpha, 128);
+  }
+
+  free(img.px);
 }
 END_TEST
 
 /* Check if the filter doesn't crash when we pass a 0x0 image */
 START_TEST(negative_zero_size) {
   /* TODO: Implement */
-  ck_assert_uint_eq(0, 1); // remove line
+  struct image zero_img;
+  zero_img.size_x = 0;
+  zero_img.size_y = 0;
+
+  filter_negative(&zero_img, NULL);
 }
 END_TEST
 
@@ -213,7 +267,26 @@ START_TEST(blur_functionality) {
   struct image img = {3, 3, &px};
 
   /* TODO: Implement */
-  ck_assert_uint_eq(0, 1); // remove line
+  struct pixel dark0 = {28, 28, 28, 255};
+  struct pixel dark1 = {42, 42, 42, 255};
+  struct pixel dark2 = {63, 63, 63, 255};
+  struct pixel expected[4][9] = {
+      {black, black, black, black, white, black, black, black, black},
+      {dark2, dark1, dark2, dark1, dark0, dark1, dark2, dark1, dark2},
+      {dark0, dark0, dark0, dark0, dark0, dark0, dark0, dark0, dark0},
+      {dark0, dark0, dark0, dark0, dark0, dark0, dark0, dark0, dark0}};
+
+  for (int radius = 0; radius < 4; ++radius) {
+    struct image duplicated_img = duplicate_img(img);
+    filter_blur(&duplicated_img, &radius);
+    for (size_t i = 0; i < 9; ++i) {
+      ck_assert_uint_eq(duplicated_img.px[i].red, expected[radius][i].red);
+      ck_assert_uint_eq(duplicated_img.px[i].green, expected[radius][i].green);
+      ck_assert_uint_eq(duplicated_img.px[i].blue, expected[radius][i].blue);
+      ck_assert_uint_eq(duplicated_img.px[i].alpha, expected[radius][i].alpha);
+    }
+    free(duplicated_img.px);
+  }
 }
 END_TEST
 
@@ -224,21 +297,42 @@ struct image blur_radius_img;
 int blur_radii[20];
 START_TEST(blur_radius_edge_cases) {
   /* TODO: Implement */
-  ck_assert_uint_eq(0, 1); // remove line
+  struct image duplicated_img = duplicate_img(blur_radius_img);
+  filter_blur(&duplicated_img, &blur_radii[_i]);
+  free(duplicated_img.px);
 }
 END_TEST
 
 /* Verify for a random image that the specific_color filter works properly */
 START_TEST(specific_color_functionality) {
   /* TODO: Implement */
-  ck_assert_uint_eq(0, 1); // remove line
+  srand(time(NULL) ^ getpid());
+  struct image img = generate_rand_img();
+  struct pixel color1 = {rand() % 256, rand() % 256, rand() % 256, 255};
+  struct pixel color2 = {rand() % 256, rand() % 256, rand() % 256, 255};
+  for (size_t i = 0; i < img.size_x * img.size_y; ++i) {
+    img.px[i] = i % 2 == 0 ? color1 : color2;
+  }
+
+  long specific_color = color1.red << 16 | color1.green << 8 | color1.blue;
+  filter_specific_color(&img, &specific_color);
+  for (size_t i = 0; i < img.size_x * img.size_y; ++i) {
+    if (i % 2 == 0) {
+      ck_assert_uint_eq(img.px[i].alpha, 255);
+    } else {
+      ck_assert_uint_eq(img.px[i].alpha, 0);
+    }
+  }
 }
 END_TEST
 
 /* Check if the function crashes when we pass nullptr as the argument */
 START_TEST(specific_color_edge_case) {
   /* TODO: Implement */
-  ck_assert_uint_eq(0, 1); // remove line
+  srand(time(NULL) ^ getpid());
+  struct pixel color = {rand() % 256, rand() % 256, rand() % 256, 255};
+  long specific_color = color.red << 16 | color.green << 8 | color.blue;
+  filter_specific_color(NULL, &specific_color);
 }
 END_TEST
 
@@ -258,9 +352,15 @@ int main() {
 
   srand(time(NULL) ^ getpid());
   blur_radius_img = generate_rand_img();
-  int tmp[20] = {
-                           /* TODO: Fill in required radii */
-  };
+  int tmp[20];
+  int values[5] = {INT_MIN, INT_MAX, 0, blur_radius_img.size_x,
+                   blur_radius_img.size_y};
+  for (size_t i = 0; i < 5; ++i) {
+    tmp[4 * i] = values[i];
+    tmp[4 * i + 1] = values[i] / 2;
+    tmp[4 * i + 2] = values[i] + 1;
+    tmp[4 * i + 3] = values[i] - 1;
+  }
   memcpy(blur_radii, tmp, sizeof(blur_radii));
   tcase_add_loop_test(tc1, blur_radius_edge_cases, 0,
                       sizeof(blur_radii) / sizeof(blur_radii[0]));
@@ -271,7 +371,8 @@ int main() {
 
   /* Tests for functionality */
   tcase_add_test(tc2, grayscale_functionality);
-                           /* TODO: Add looped test case for grayscale_examples */
+  tcase_add_loop_test(tc2, grayscale_examples, 0,
+                      sizeof(grayscale_sources) / sizeof(grayscale_sources[0]));
   tcase_add_test(tc2, negative_functionality);
   tcase_add_test(tc2, blur_functionality);
   tcase_add_test(tc2, specific_color_functionality);
