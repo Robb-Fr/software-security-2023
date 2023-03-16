@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
 
   /* Invalid color will be interpreted as black */
   char *end_ptr;
-  long hex_color = strtol(argv[6], end_ptr, 16);
+  long hex_color = strtol(argv[6], &end_ptr, 16);
   if (*end_ptr || strlen(argv[6]) != 6 || hex_color < 0) {
     hex_color = 0;
   }
