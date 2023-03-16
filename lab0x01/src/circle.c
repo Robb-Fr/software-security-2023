@@ -77,9 +77,10 @@ int main(int argc, char *argv[]) {
                   sqrt(radius * radius - (y - center_y) * (y - center_y)));
 
     image_data[y][x].red = (hex_color & 0xff0000) >> 16;
-    image_data[y][x].green = (hex_color & 0x00ff00) >> 8;
-    image_data[y][x].blue = (hex_color & 0x0000ff);
-    image_data[y][x].alpha = 0xff;
+      image_data[y][x].red = (hex_color & 0xff0000) >> 16;
+      image_data[y][x].blue = (hex_color & 0x0000ff);
+      image_data[y][x].alpha = 0xff;
+    }
 
     x = round(center_x -
               sqrt(radius * radius - (y - center_y) * (y - center_y)));
