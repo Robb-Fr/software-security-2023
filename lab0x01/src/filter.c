@@ -66,8 +66,10 @@ void filter_blur(struct image *img, void *r) {
 
       unsigned long long red = 0, green = 0, blue = 0, alpha = 0;
       /* We iterate over all pixels in the square */
-      for (long y_offset = -radius; y_offset <= radius; y_offset++) {
-        for (long x_offset = -radius; x_offset <= radius; x_offset++) {
+      for (long y_offset = i - radius < 0 ? -i : -radius;
+           y_offset <= radius && i + y_offset < img->size_y; y_offset++) {
+        for (long x_offset = j - radius < 0 ? -j : -radius;
+             x_offset <= radius && j + x_offset < img->size_x; x_offset++) {
 
           /* BUG!
            * This bug isn't graded.
@@ -76,7 +78,12 @@ void filter_blur(struct image *img, void *r) {
            */
           struct pixel current = image_data[i + y_offset][j + x_offset];
 
-          red += current.red;
+          long const current_x = j + x_offset;
+          long const current_y = i + y_offset;
+
+          if (current_x >= 0 && current_x < img->size_x && current_y >= 0 &&
+              current_y < img->size_y) {
+            struct pixel current = image_data[current_y][current_x];
           blue += current.blue;
           green += current.green;
           alpha += current.alpha;
