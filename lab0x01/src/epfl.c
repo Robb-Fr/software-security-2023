@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
   while (j < width) {
     unsigned i = top_left_y;
     // Check if we are in a column to draw
-    if (j >= top_left_x && j < top_left_x + logo_width * size) {
+    if (j >= top_left_x && j < top_left_x + logo_width) {
       // Find column index in logo
       unsigned j_logo = (j - top_left_x) / size;
       // Ensure that we do not go below the bottom of the picture
@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
       for (int i_logo = 0; i_logo < size * logo_height; i_logo++) {
         // i_logo / size is between 0 and logo_height and when shifted get us
         // the correct bit mask for the logo int.
-        if (epfl[j_logo] & (16 >> i_logo / size)) {
+        if (epfl[j_logo] & (16 >> i_logo / size) && (i + i_logo) < height) {
           /* The fancy syntax here is just masking the corresponding bits
            * If the color is RRGGBB, performing AND with 0xff0000 will isolate
            * the bytes representing red. We then shift them to the right to
