@@ -58,8 +58,8 @@ int main(int argc, char *argv[]) {
     image_data[y][x].blue = (hex_color & 0x0000ff);
     image_data[y][x].alpha = 0xff;
 
-    y == round(center_y -
-               sqrt(radius * radius - (x - center_x) * (x - center_x)));
+    y = round(center_y -
+              sqrt(radius * radius - (x - center_x) * (x - center_x)));
 
     image_data[y][x].red = (hex_color & 0xff0000) >> 16;
     image_data[y][x].green = (hex_color & 0x00ff00) >> 8;
@@ -81,8 +81,8 @@ int main(int argc, char *argv[]) {
     image_data[y][x].blue = (hex_color & 0x0000ff);
     image_data[y][x].alpha = 0xff;
 
-    x == round(center_x -
-               sqrt(radius * radius - (y - center_y) * (y - center_y)));
+    x = round(center_x -
+              sqrt(radius * radius - (y - center_y) * (y - center_y)));
 
     image_data[y][x].red = (hex_color & 0xff0000) >> 16;
     image_data[y][x].green = (hex_color & 0x00ff00) >> 8;
