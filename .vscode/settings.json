@@ -22,5 +22,6 @@
     "files.associations": {
         "string.h": "c"
     },
-    "cmake.configureOnOpen": true
+    "cmake.configureOnOpen": true,
+    "python.formatting.provider": "black"
 }
