@@ -6,8 +6,8 @@ pip install pwntools
 
 bash -c "$(curl -fsSL https://gef.blah.cat/sh)"
 
-chown -hR tdemont ./
+pip install r2env && r2env init && r2env add radare2@git
 
-chmod +x -R ~/tsclient/SoftSecShared/software-security-2023/lab0x02/ghidra_10.2.3_PUBLIC/
+chown -hR tdemont ./
 
 setxkbmap ch fr_mac
