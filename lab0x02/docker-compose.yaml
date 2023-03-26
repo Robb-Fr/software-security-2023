@@ -1,0 +1,6 @@
+services:
+  ubuntu:
+    build: ./Docker
+    tty: true
+    volumes:
+      - .:/lab2
