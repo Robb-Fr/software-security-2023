@@ -8,7 +8,6 @@ bash -c "$(curl -fsSL https://gef.blah.cat/sh)"
 
 chown -hR tdemont ./
 
-chmod +x ~/tsclient/SoftSecShared/software-security-2023/lab0x02/ghidra_10.2.3_PUBLIC/ghidraRun
-chmod +x ~/tsclient/SoftSecShared/software-security-2023/lab0x02/ghidra_10.2.3_PUBLIC/support/launch.sh
+chmod +x -R ~/tsclient/SoftSecShared/software-security-2023/lab0x02/ghidra_10.2.3_PUBLIC/
 
 setxkbmap ch fr_mac
