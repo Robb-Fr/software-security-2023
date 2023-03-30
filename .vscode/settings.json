@@ -20,7 +20,8 @@
     "C_Cpp.clang_format_fallbackStyle": "LLVM",
     "C_Cpp.clang_format_style": "LLVM",
     "files.associations": {
-        "string.h": "c"
+        "string.h": "c",
+        "stdlib.h": "c"
     },
     "cmake.configureOnOpen": true,
     "python.formatting.provider": "black"
