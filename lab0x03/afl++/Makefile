@@ -1,4 +1,4 @@
-CC = clang
+CC = afl-clang
 override CFLAGS += -g -w -O3 -fsanitize=address
 
 all: libpngparser size
