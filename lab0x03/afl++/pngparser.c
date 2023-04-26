@@ -219,20 +219,22 @@ int is_png_filesig_valid(struct png_header_filesig *filesig) {
   return !memcmp(filesig, "\211PNG\r\n\032\n", 8);
 }
 
-/* CRC for a chunk. This prevents data corruption. 
+/* CRC for a chunk. This prevents data corruption.
  * Patch it to always return 1 in the AFL++ lab.
  * Do not modify it in the libFuzzer lab.
  */
 int is_png_chunk_valid(struct png_chunk *chunk) {
-  uint32_t crc_value =
-      crc((unsigned char *)&chunk->chunk_type, sizeof(int32_t));
+  return 1;
+  // uint32_t crc_value =
+  //     crc((unsigned char *)&chunk->chunk_type, sizeof(int32_t));
 
-  if (chunk->length) {
-    crc_value = update_crc(crc_value ^ 0xffffffffL,
-                           (unsigned char *)chunk->chunk_data, chunk->length) ^
-                0xffffffffL;
-  }
-  return chunk->crc == crc_value;
+  // if (chunk->length) {
+  //   crc_value = update_crc(crc_value ^ 0xffffffffL,
+  //                          (unsigned char *)chunk->chunk_data, chunk->length)
+  //                          ^
+  //               0xffffffffL;
+  // }
+  // return chunk->crc == crc_value;
 }
 
 /* Fill the chunk with the data from the file.*/
@@ -271,8 +273,10 @@ int read_png_chunk(FILE *file, struct png_chunk *chunk) {
   return 0;
 
 error:
-  if (chunk->chunk_data){
+  if (chunk->chunk_data) {
     free(chunk->chunk_data);
+    chunk->chunk_data = NULL; // BUG-1 - set here to null to avoid double free
+                              // in load_png success or error roads
   }
   return 1;
 }
@@ -392,21 +396,37 @@ struct image *convert_color_palette_to_image(png_chunk_ihdr *ihdr_chunk,
   uint32_t width = ihdr_header->width;
   uint32_t palette_idx = 0;
 
+  if (!plte_chunk) {
+    return NULL;
+  }
   struct plte_entry *plte_entries = (struct plte_entry *)plte_chunk->chunk_data;
 
-  struct image *img = malloc(sizeof(struct image));
+  struct image *img = calloc(1, sizeof(struct image));
+
+  if (!img) {
+    goto error;
+  }
+
   img->size_y = height;
   img->size_x = width;
   img->px = malloc(sizeof(struct pixel) * img->size_x * img->size_y);
 
+  if (!img->px) {
+    goto error;
+  }
+
   for (uint32_t idy = 0; idy < height; idy++) {
+    // BUG-3 - added bound check to prevent overflow in inflated_buf
     // Filter byte at the start of every scanline needs to be 0
-    if (inflated_buf[idy * (1 + width)]) {
-      free(img->px);
-      free(img);
-      return NULL;
+    if (idy * (1 + width) >= inflated_size || inflated_buf[idy * (1 + width)]) {
+      goto error;
     }
     for (uint32_t idx = 0; idx < width; idx++) {
+      // BUG-3 - added bound check to prevent overflow in inflated_buf
+      if (idy * (1 + width) + idx + 1 >= inflated_size ||
+          idy * img->size_x + idx >= img->size_x * img->size_y) {
+        goto error;
+      }
       palette_idx = inflated_buf[idy * (1 + width) + idx + 1];
       img->px[idy * img->size_x + idx].red = plte_entries[palette_idx].red;
       img->px[idy * img->size_x + idx].green = plte_entries[palette_idx].green;
@@ -416,6 +436,15 @@ struct image *convert_color_palette_to_image(png_chunk_ihdr *ihdr_chunk,
   }
 
   return img;
+
+error:
+  if (img) {
+    if (img->px) {
+      free(img->px);
+    }
+    free(img);
+  }
+  return NULL;
 }
 
 /* Combine image metadata and decompressed image data (RGBA) into an image */
@@ -430,7 +459,7 @@ struct image *convert_rgb_alpha_to_image(png_chunk_ihdr *ihdr_chunk,
   uint32_t pixel_idx = 0;
   uint32_t r_idx, g_idx, b_idx, a_idx;
 
-  struct image *img = malloc(sizeof(struct image));
+  struct image *img = calloc(1, sizeof(struct image));
 
   if (!img) {
     goto error;
@@ -474,7 +503,8 @@ error:
     }
     free(img);
   }
-
+  return NULL; // BUG-4 - return NULL to ensure there is not "use after free" in
+               // size
 }
 
 /* Creates magic unicorns */
@@ -553,14 +583,18 @@ int load_png(const char *filename, struct image **img) {
 
   int chunk_idx = -1;
 
-  struct png_chunk *current_chunk = malloc(sizeof(struct png_chunk));
-
+  struct png_chunk *current_chunk = calloc(
+      1, sizeof(struct png_chunk)); // initialize to a non garbage value in case
+                                    // we go through the error road quickly
   FILE *input = fopen(filename, "rb");
 
   // Has the file been open properly?
   if (!input) {
+    // fprintf(stderr, "Could not open the file\n");
     goto error;
   }
+
+  // fprintf(stderr, "Passed the opened file check\n");
 
   // Did we read the starting bytes properly?
   if (read_png_filesig(input, &filesig)) {
@@ -572,9 +606,11 @@ int load_png(const char *filename, struct image **img) {
     goto error;
   }
 
+  // fprintf(stderr, "Passed file signature checks\n");
+
   // Read all PNG chunks
   for (; !read_png_chunk(input, current_chunk);
-       current_chunk = malloc(sizeof(struct png_chunk))) {
+       current_chunk = calloc(1, sizeof(struct png_chunk))) {
     chunk_idx++;
     // We have more chunks after IEND for some reason
     // IEND must be the last chunk
@@ -659,28 +695,34 @@ int load_png(const char *filename, struct image **img) {
 
       if (idat_chunk->chunk_data) {
         free(idat_chunk->chunk_data);
+        idat_chunk->chunk_data = NULL;
       }
 
       free(idat_chunk);
+      idat_chunk = NULL;
     }
 
     // unsupported chunk types
-    else{
+    else {
       goto error;
     }
   }
 
+  // fprintf(stderr, "Passed the for loop\n");
   // After we finish looping, we should have processed IEND
   if (!iend_chunk) {
+    // fprintf(stderr, "Crashed on iend chunk\n");
     goto error;
   }
 
+  // fprintf(stderr, "Passed the iend chunk check\n");
   // Decompress IDAT data
   if (decompress_png_data(deflated_buf, deflated_data_length, &inflated_buf,
                           &inflated_size)) {
     goto error;
   }
 
+  // fprintf(stderr, "Passed the decompression\n");
   // Process decompressed data
   *img = parse_png(ihdr_chunk, plte_chunk, inflated_buf, inflated_size);
 
@@ -688,12 +730,17 @@ int load_png(const char *filename, struct image **img) {
     goto error;
   }
 
+  // fprintf(stderr, "Passed the png parsing\n");
 success:
   fclose(input);
 
   if (deflated_buf)
     free(deflated_buf);
 
+  if (inflated_buf) {
+    free(inflated_buf);
+  }
+
   if (current_chunk) {
     if (current_chunk->chunk_data) {
       free(current_chunk->chunk_data);
@@ -701,23 +748,43 @@ success:
     free(current_chunk);
   }
 
-  if (plte_chunk){
+  // BUG-2 - for success and error roads, also free the inner chunk_data buffers
+  // to avoid memory leaks
+  if (plte_chunk) {
+    if (plte_chunk->chunk_data) {
+      free(plte_chunk->chunk_data);
+    }
     free(plte_chunk);
   }
-  if (ihdr_chunk){
+
+  if (ihdr_chunk) {
+    if (ihdr_chunk->chunk_data) {
+      free(ihdr_chunk->chunk_data);
+    }
     free(ihdr_chunk);
   }
+
   if (iend_chunk) {
+    if (iend_chunk->chunk_data) {
+      free(iend_chunk->chunk_data);
+    }
     free(iend_chunk);
   }
 
   return 0;
 
 error:
-  fclose(input);
+  // fprintf(stderr, "Reached the error block\n");
+  if (input) {
+    fclose(input);
+  }
 
   if (deflated_buf)
     free(deflated_buf);
+
+  if (inflated_buf) {
+    free(inflated_buf);
+  }
 
   if (current_chunk) {
     if (current_chunk->chunk_data) {
@@ -726,13 +793,24 @@ error:
     free(current_chunk);
   }
 
-  if (plte_chunk){
+  if (plte_chunk) {
+    if (plte_chunk->chunk_data) {
+      free(plte_chunk->chunk_data);
+    }
     free(plte_chunk);
   }
-  if (ihdr_chunk){
+
+  if (ihdr_chunk) {
+    if (ihdr_chunk->chunk_data) {
+      free(ihdr_chunk->chunk_data);
+    }
     free(ihdr_chunk);
   }
+
   if (iend_chunk) {
+    if (iend_chunk->chunk_data) {
+      free(iend_chunk->chunk_data);
+    }
     free(iend_chunk);
   }
 
@@ -893,7 +971,7 @@ png_chunk_idat fill_idat_chunk(uint8_t *data, uint32_t length) {
 // Writes an IDAT chunk from image data to a file
 int store_idat_rgb_alpha(FILE *output, struct image *img) {
   uint32_t non_compressed_length = img->size_y * (1 + img->size_x * 4);
-  uint8_t *non_compressed_buf = malloc(non_compressed_length);
+  uint8_t *non_compressed_buf = calloc(non_compressed_length, sizeof(uint8_t));
 
   for (uint32_t id_y = 0; id_y <= img->size_y; id_y++) {
     non_compressed_buf[id_y * (1 + img->size_x * 4)] = 0;
@@ -917,7 +995,7 @@ int store_idat_rgb_alpha(FILE *output, struct image *img) {
   png_chunk_idat idat = fill_idat_chunk(compressed_data_buf, compressed_length);
   store_png_chunk(output, (struct png_chunk *)&idat);
 
-  if(non_compressed_buf)
+  if (non_compressed_buf)
     free(non_compressed_buf);
 
   return 0;
@@ -965,7 +1043,7 @@ int store_idat_plte(FILE *output, struct image *img, struct pixel *palette,
 
   png_chunk_idat idat = fill_idat_chunk(compressed_data_buf, compressed_length);
   store_png_chunk(output, (struct png_chunk *)&idat);
-  
+
   return 0;
 
 error:
