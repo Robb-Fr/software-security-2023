@@ -1,6 +1,32 @@
 {
     "configurations": [
         {
+            "name": "(gdb) Launch afl++ size",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/lab0x03/afl++/size",
+            "args": [
+                "afl_in/palette.png"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
             "name": "(gdb) Launch solid",
             "type": "cppdbg",
             "request": "launch",
