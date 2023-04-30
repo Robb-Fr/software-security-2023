@@ -1,6 +1,32 @@
 {
     "configurations": [
         {
+            "name": "(gdb) Launch libfuzzer_load_png",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/lab0x03/libfuzzer/fuzzer_store_png_rgba",
+            "args": [
+                "crash-edfa350c5c5437b357c70c478de992f30ceaebec"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
             "name": "(gdb) Launch afl++ size",
             "type": "cppdbg",
             "request": "launch",
