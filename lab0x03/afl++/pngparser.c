@@ -971,7 +971,7 @@ png_chunk_idat fill_idat_chunk(uint8_t *data, uint32_t length) {
 // Writes an IDAT chunk from image data to a file
 int store_idat_rgb_alpha(FILE *output, struct image *img) {
   uint32_t non_compressed_length = img->size_y * (1 + img->size_x * 4);
-  uint8_t *non_compressed_buf = calloc(non_compressed_length, sizeof(uint8_t));
+  uint8_t *non_compressed_buf = malloc(non_compressed_length);
 
   for (uint32_t id_y = 0; id_y <= img->size_y; id_y++) {
     non_compressed_buf[id_y * (1 + img->size_x * 4)] = 0;
