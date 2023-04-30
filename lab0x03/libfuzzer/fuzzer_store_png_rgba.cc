@@ -4,7 +4,6 @@ extern "C" {
 #include <stdio.h>
 
 #include "png_mutator.h"
-#include "yolo_png_mutator.h"
 
 // LibFuzzer stub
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
@@ -18,6 +17,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   // What would happen if we run multiple fuzzing processes at the same time?
   // Take a look at the name of the file.
   if (load_png("testfile.png", &test_img) == 0) {
+    store_png("testfile1.png", test_img, NULL, 0);
     if (test_img) {
       if (test_img->px)
         free(test_img->px);
