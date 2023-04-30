@@ -1,0 +1,34 @@
+INFO: found LLVMFuzzerCustomMutator (0xaaaaae64ed2c). Disabling -len_control by default.
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 2980685046
+INFO: Loaded 1 modules   (896 inline 8-bit counters): 896 [0xaaaaae6b1020, 0xaaaaae6b13a0), 
+INFO: Loaded 1 PC tables (896 PCs): 896 [0xaaaaae6b13a0,0xaaaaae6b4ba0), 
+INFO:      251 files found in seeds/
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 251 min: 1b max: 3680b total: 81667b rss: 38Mb
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==31110==ERROR: AddressSanitizer: SEGV on unknown address 0xaaaaae663ef4 (pc 0xaaaaae664360 bp 0xffffc1b91c90 sp 0xffffc1b91440 T0)
+==31110==The signal is caused by a WRITE memory access.
+    #0 0xaaaaae664360 in __aarch64_cas1_acq_rel (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_palette+0x124360) (BuildId: 8624898493d79c81c8804dde90f1db891c66b09a)
+    #1 0xaaaaae5a1f08 in __asan::Allocator::Deallocate(void*, unsigned long, unsigned long, __sanitizer::BufferedStackTrace*, __asan::AllocType) (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_palette+0x61f08) (BuildId: 8624898493d79c81c8804dde90f1db891c66b09a)
+    #2 0xaaaaae617c1c in __interceptor_free (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_palette+0xd7c1c) (BuildId: 8624898493d79c81c8804dde90f1db891c66b09a)
+    #3 0xaaaaae662560 in store_idat_plte /home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/pngparser.c:1109:5
+    #4 0xaaaaae663dd4 in store_png_palette /home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/pngparser.c:1152:3
+    #5 0xaaaaae663dd4 in store_png /home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/pngparser.c:1177:5
+    #6 0xaaaaae655b88 in LLVMFuzzerTestOneInput /home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_palette.cc:29:5
+    #7 0xaaaaae588cc4 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_palette+0x48cc4) (BuildId: 8624898493d79c81c8804dde90f1db891c66b09a)
+    #8 0xaaaaae5884d8 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_palette+0x484d8) (BuildId: 8624898493d79c81c8804dde90f1db891c66b09a)
+    #9 0xaaaaae58a0ac in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_palette+0x4a0ac) (BuildId: 8624898493d79c81c8804dde90f1db891c66b09a)
+    #10 0xaaaaae58a5bc in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_palette+0x4a5bc) (BuildId: 8624898493d79c81c8804dde90f1db891c66b09a)
+    #11 0xaaaaae579874 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_palette+0x39874) (BuildId: 8624898493d79c81c8804dde90f1db891c66b09a)
+    #12 0xaaaaae5a0d6c in main (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_palette+0x60d6c) (BuildId: 8624898493d79c81c8804dde90f1db891c66b09a)
+    #13 0xffff982473f8 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #14 0xffff982474c8 in __libc_start_main csu/../csu/libc-start.c:392:3
+    #15 0xaaaaae56fcac in _start (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_palette+0x2fcac) (BuildId: 8624898493d79c81c8804dde90f1db891c66b09a)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_palette+0x124360) (BuildId: 8624898493d79c81c8804dde90f1db891c66b09a) in __aarch64_cas1_acq_rel
+==31110==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+artifact_prefix='./'; Test unit written to ./crash-2d5ff885f157e7321b0f50c06272f3da682963af

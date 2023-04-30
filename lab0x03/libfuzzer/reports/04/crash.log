@@ -1,0 +1,36 @@
+INFO: found LLVMFuzzerCustomMutator (0xaaaad0b7ed2c). Disabling -len_control by default.
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 2182209828
+INFO: Loaded 1 modules   (897 inline 8-bit counters): 897 [0xaaaad0be1020, 0xaaaad0be13a1), 
+INFO: Loaded 1 PC tables (897 PCs): 897 [0xaaaad0be13a8,0xaaaad0be4bb8), 
+INFO:      253 files found in seeds/
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 253 min: 1b max: 3680b total: 82157b rss: 38Mb
+
+=================================================================
+==33598==ERROR: LeakSanitizer: detected memory leaks
+
+Direct leak of 10100 byte(s) in 1 object(s) allocated from:
+    #0 0xaaaad0b47e48 in malloc (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_palette+0xd7e48) (BuildId: 1a1ead28b419ad975d41ecc1fd8d86805537df9f)
+    #1 0xaaaad0b92210 in store_idat_plte /home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/pngparser.c:1081:33
+    #2 0xaaaad0b93ed8 in store_png_palette /home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/pngparser.c:1157:3
+    #3 0xaaaad0b93ed8 in store_png /home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/pngparser.c:1182:5
+    #4 0xaaaad0b85b88 in LLVMFuzzerTestOneInput /home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_palette.cc:29:5
+    #5 0xaaaad0ab8cc4 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_palette+0x48cc4) (BuildId: 1a1ead28b419ad975d41ecc1fd8d86805537df9f)
+    #6 0xaaaad0ab84d8 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_palette+0x484d8) (BuildId: 1a1ead28b419ad975d41ecc1fd8d86805537df9f)
+    #7 0xaaaad0aba0ac in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_palette+0x4a0ac) (BuildId: 1a1ead28b419ad975d41ecc1fd8d86805537df9f)
+    #8 0xaaaad0aba5bc in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_palette+0x4a5bc) (BuildId: 1a1ead28b419ad975d41ecc1fd8d86805537df9f)
+    #9 0xaaaad0aa9874 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_palette+0x39874) (BuildId: 1a1ead28b419ad975d41ecc1fd8d86805537df9f)
+    #10 0xaaaad0ad0d6c in main (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_palette+0x60d6c) (BuildId: 1a1ead28b419ad975d41ecc1fd8d86805537df9f)
+    #11 0xffffa7f973f8 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #12 0xffffa7f974c8 in __libc_start_main csu/../csu/libc-start.c:392:3
+    #13 0xaaaad0a9fcac in _start (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_palette+0x2fcac) (BuildId: 1a1ead28b419ad975d41ecc1fd8d86805537df9f)
+
+SUMMARY: AddressSanitizer: 10100 byte(s) leaked in 1 allocation(s).
+
+INFO: a leak has been found in the initial corpus.
+
+INFO: to ignore leaks on libFuzzer side use -detect_leaks=0.
+
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+artifact_prefix='./'; Test unit written to ./leak-2d5ff885f157e7321b0f50c06272f3da682963af
