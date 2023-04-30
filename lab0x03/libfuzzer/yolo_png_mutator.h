@@ -128,8 +128,16 @@ public:
       break;
     // Mutate some other chunk
     case 1:
-      if (!chunks_.empty())
-        M(&chunks_[rnd() % chunks_.size()].v);
+      if (!chunks_.empty()) {
+        if (plte_.empty() || rand() % 2) {
+          M(&chunks_[rnd() % chunks_.size()].v);
+        } else {
+          M(&plte_[0].v);
+          if (plte_[0].v.size() % 3) {
+            plte_[0].v.resize(3 * (plte_[0].v.size() % 85));
+          }
+        }
+      }
       break;
     // Shuffle the chunks.
     case 2:
@@ -142,13 +150,25 @@ public:
       break;
     // Insert a random chunk with one of the known types, or a random type.
     case 4: {
-      uint32_t type = Type("IDAT");
-      size_t len = rnd() % 256;
-      V v(len);
-      for (auto &b : v)
-        b = rnd();
-      size_t pos = rnd() % (chunks_.size() + 1);
-      chunks_.insert(chunks_.begin() + pos, {type, v});
+      if (rand() % 2) {
+        uint32_t type = Type("IDAT");
+        size_t len = rnd() % 256;
+        V v(len);
+        for (auto &b : v)
+          b = rnd();
+        size_t pos = rnd() % (chunks_.size() + 1);
+        chunks_.insert(chunks_.begin() + pos, {type, v});
+      } else {
+        uint32_t type = Type("PLTE");
+        size_t len = 3 * (rnd() % 85);
+        V v(len);
+        for (auto &b : v)
+          b = rnd();
+        if (!plte_.empty()) {
+          plte_.clear();
+        }
+        plte_.push_back({type, v});
+      }
     } break;
     }
   }
