@@ -145,8 +145,14 @@ public:
       break;
     // Delete a random chunk.
     case 3:
-      if (!chunks_.empty())
-        chunks_.erase(chunks_.begin() + rnd() % chunks_.size());
+      if (rand() % 20) {
+        if (!chunks_.empty())
+          chunks_.erase(chunks_.begin() + rnd() % chunks_.size());
+      } else {
+        if (!plte_.empty()) {
+          plte_.clear();
+        }
+      }
       break;
     // Insert a random chunk with one of the known types, or a random type.
     case 4: {
