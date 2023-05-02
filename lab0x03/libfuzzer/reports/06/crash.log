@@ -1,0 +1,77 @@
+INFO: found LLVMFuzzerCustomMutator (0xaaaac0fedb2c). Disabling -len_control by default.
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 1038409768
+INFO: Loaded 1 modules   (865 inline 8-bit counters): 865 [0xaaaac104e880, 0xaaaac104ebe1),
+INFO: Loaded 1 PC tables (865 PCs): 865 [0xaaaac104ebe8,0xaaaac10521f8),
+INFO:      130 files found in seeds/
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 130 min: 1b max: 1312b total: 21506b rss: 38Mb
+=================================================================
+==33223==ERROR: AddressSanitizer: heap-buffer-overflow on address 0xffffafd220a4 at pc 0xaaaac1000730 bp 0xffffdd6a56b0 sp 0xffffdd6a56a8
+WRITE of size 1 at 0xffffafd220a4 thread T0
+    #0 0xaaaac100072c in store_idat_rgb_alpha /home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/pngparser.c:1033:54
+    #1 0xaaaac100281c in store_png_rgb_alpha /home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/pngparser.c:1128:3
+    #2 0xaaaac100281c in store_png /home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/pngparser.c:1189:5
+    #3 0xaaaac0ff41d0 in LLVMFuzzerTestOneInput /home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_rgba.cc:21:5
+    #4 0xaaaac0f27ac4 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_rgba_custom_mutator+0x47ac4) (BuildId: 54cbe140c65b20e55f2d098b605a10276fa6b6a5)
+    #5 0xaaaac0f272d8 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_rgba_custom_mutator+0x472d8) (BuildId: 54cbe140c65b20e55f2d098b605a10276fa6b6a5)
+    #6 0xaaaac0f28eac in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_rgba_custom_mutator+0x48eac) (BuildId: 54cbe140c65b20e55f2d098b605a10276fa6b6a5)
+    #7 0xaaaac0f293bc in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_rgba_custom_mutator+0x493bc) (BuildId: 54cbe140c65b20e55f2d098b605a10276fa6b6a5)
+    #8 0xaaaac0f18674 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_rgba_custom_mutator+0x38674) (BuildId: 54cbe140c65b20e55f2d098b605a10276fa6b6a5)
+    #9 0xaaaac0f3fb6c in main (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_rgba_custom_mutator+0x5fb6c) (BuildId: 54cbe140c65b20e55f2d098b605a10276fa6b6a5)
+    #10 0xffffb83f73f8 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #11 0xffffb83f74c8 in __libc_start_main csu/../csu/libc-start.c:392:3
+    #12 0xaaaac0f0eaac in _start (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_rgba_custom_mutator+0x2eaac) (BuildId: 54cbe140c65b20e55f2d098b605a10276fa6b6a5)
+
+0xffffafd220a4 is located 0 bytes to the right of 40100-byte region [0xffffafd18400,0xffffafd220a4)
+allocated by thread T0 here:
+    #0 0xaaaac0fb6c48 in malloc (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_rgba_custom_mutator+0xd6c48) (BuildId: 54cbe140c65b20e55f2d098b605a10276fa6b6a5)
+    #1 0xaaaac0ffff1c in store_idat_rgb_alpha /home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/pngparser.c:1027:33
+    #2 0xaaaac100281c in store_png_rgb_alpha /home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/pngparser.c:1128:3
+    #3 0xaaaac100281c in store_png /home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/pngparser.c:1189:5
+    #4 0xaaaac0ff41d0 in LLVMFuzzerTestOneInput /home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_rgba.cc:21:5
+    #5 0xaaaac0f27ac4 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_rgba_custom_mutator+0x47ac4) (BuildId: 54cbe140c65b20e55f2d098b605a10276fa6b6a5)
+    #6 0xaaaac0f272d8 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_rgba_custom_mutator+0x472d8) (BuildId: 54cbe140c65b20e55f2d098b605a10276fa6b6a5)
+    #7 0xaaaac0f28eac in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_rgba_custom_mutator+0x48eac) (BuildId: 54cbe140c65b20e55f2d098b605a10276fa6b6a5)
+    #8 0xaaaac0f293bc in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_rgba_custom_mutator+0x493bc) (BuildId: 54cbe140c65b20e55f2d098b605a10276fa6b6a5)
+    #9 0xaaaac0f18674 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_rgba_custom_mutator+0x38674) (BuildId: 54cbe140c65b20e55f2d098b605a10276fa6b6a5)
+    #10 0xaaaac0f3fb6c in main (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_rgba_custom_mutator+0x5fb6c) (BuildId: 54cbe140c65b20e55f2d098b605a10276fa6b6a5)
+    #11 0xffffb83f73f8 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #12 0xffffb83f74c8 in __libc_start_main csu/../csu/libc-start.c:392:3
+    #13 0xaaaac0f0eaac in _start (/home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/fuzzer_store_png_rgba_custom_mutator+0x2eaac) (BuildId: 54cbe140c65b20e55f2d098b605a10276fa6b6a5)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /home/robb/Desktop/software-security-2023/lab0x03/libfuzzer/pngparser.c:1033:54 in store_idat_rgb_alpha
+Shadow bytes around the buggy address:
+  0x200ff5fa43c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x200ff5fa43d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x200ff5fa43e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x200ff5fa43f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x200ff5fa4400: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x200ff5fa4410: 00 00 00 00[04]fa fa fa fa fa fa fa fa fa fa fa
+  0x200ff5fa4420: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x200ff5fa4430: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x200ff5fa4440: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x200ff5fa4450: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x200ff5fa4460: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==33223==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+artifact_prefix='./'; Test unit written to ./crash-2d5ff885f157e7321b0f50c06272f3da682963af
