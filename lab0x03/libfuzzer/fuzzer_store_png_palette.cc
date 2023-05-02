@@ -4,8 +4,9 @@ extern "C" {
 #include <stdio.h>
 
 #include "png_mutator.h"
+#include "yolo_png_mutator.h"
 
-#define PALETTE_SIZE 5
+#define PALETTE_SIZE 20
 
 // LibFuzzer stub
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
