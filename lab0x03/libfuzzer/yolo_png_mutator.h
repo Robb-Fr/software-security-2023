@@ -60,7 +60,9 @@ public:
 
       if (type == Type("PLTE")) {
         if (idat_idx != -1 || got_palette || len % 3 != 0) {
-          break; // can't read palette after an idat, palette len must be mod 3
+          // palette must be before IDAT, there's only one palette and its
+          // length must be multiple of 3
+          break;
         }
         got_palette = true;
         plte_.push_back({type, v});
@@ -128,12 +130,15 @@ public:
       break;
     // Mutate some other chunk
     case 1:
-      if (!chunks_.empty()) {
-        if (plte_.empty() || rand() % 2) {
+      if (rand() % 10) { // we want to mutate IDAT more often (more chunks)
+        if (!chunks_.empty()) {
           M(&chunks_[rnd() % chunks_.size()].v);
-        } else {
+        }
+      } else {
+        if (!plte_.empty()) {
           M(&plte_[0].v);
-          if (plte_[0].v.size() % 3) {
+          if (plte_[0].v.size() %
+              3) { // always ensure our palette is valid size
             plte_[0].v.resize(3 * (plte_[0].v.size() % 85));
           }
         }
@@ -141,11 +146,12 @@ public:
       break;
     // Shuffle the chunks.
     case 2:
+      // we don't care about shuffling other chunks (only 0 or 1)
       std::shuffle(chunks_.begin(), chunks_.end(), rnd);
       break;
     // Delete a random chunk.
     case 3:
-      if (rand() % 20) {
+      if (rand() % 10) { // we want to delete IDAT more often (more chunks)
         if (!chunks_.empty())
           chunks_.erase(chunks_.begin() + rnd() % chunks_.size());
       } else {
@@ -156,7 +162,7 @@ public:
       break;
     // Insert a random chunk with one of the known types, or a random type.
     case 4: {
-      if (rand() % 2) {
+      if (rand() % 10) { // we want to insert IDAT more often (more chunks)
         uint32_t type = Type("IDAT");
         size_t len = rnd() % 256;
         V v(len);
@@ -166,11 +172,11 @@ public:
         chunks_.insert(chunks_.begin() + pos, {type, v});
       } else {
         uint32_t type = Type("PLTE");
-        size_t len = 3 * (rnd() % 85);
+        size_t len = 3 * (rnd() % 85); // we pay attention to the %3 length
         V v(len);
         for (auto &b : v)
           b = rnd();
-        if (!plte_.empty()) {
+        if (!plte_.empty()) { // ensure we always have at most 1 plte chunk
           plte_.clear();
         }
         plte_.push_back({type, v});
@@ -184,10 +190,21 @@ public:
     if (p.chunks_.empty())
       return;
     std::minstd_rand rnd(Seed);
-    size_t idx = rnd() % p.chunks_.size();
-    auto &ch = p.chunks_[idx];
-    size_t pos = rnd() % (chunks_.size() + 1);
-    chunks_.insert(chunks_.begin() + pos, ch);
+    // we randomly mutate plte or idat
+    if (rand() % 10) {
+      size_t idx = rnd() % p.chunks_.size();
+      auto &ch = p.chunks_[idx];
+      size_t pos = rnd() % (chunks_.size() + 1);
+      chunks_.insert(chunks_.begin() + pos, ch);
+    } else {
+      if (!p.plte_.empty()) {
+        auto &ch = p.plte_[0].v;
+        if (!plte_.empty()) {
+          plte_.clear();
+        }
+        plte_.push_back({Type("PLTE"), ch});
+      }
+    }
   }
 
 private:
@@ -294,7 +311,9 @@ private:
     uint32_t type;
     V v;
   };
+  // new attribute to store palette chunks
   std::vector<Chunk> plte_;
+  // should now only contain IDAT chunks
   std::vector<Chunk> chunks_;
 };
 
