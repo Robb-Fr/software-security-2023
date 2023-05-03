@@ -1,6 +1,6 @@
 # Answers
 
-This document contains the answers for the AFL++ part of the lab
+This document contains the answers for the Libfuzzer part of the lab
 
 ## You did not change `is_png_chunk_valid` in this lab, does it affect the performance of libFuzzer's default mutator? What about the example PNG mutator and your custom YOLO PNG mutator?
 
