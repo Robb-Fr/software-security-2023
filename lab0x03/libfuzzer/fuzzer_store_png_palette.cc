@@ -27,7 +27,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       palette[i].blue = (i * i * i + 92) % 128;
       palette[i].alpha = (i * i * i * i + 2 * 1) % 128;
     }
-    store_png("testfile1.png", test_img, palette, PALETTE_SIZE);
+    store_png("testfile.png", test_img, palette, PALETTE_SIZE);
     if (test_img) {
       if (test_img->px)
         free(test_img->px);
