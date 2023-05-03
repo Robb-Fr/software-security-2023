@@ -275,8 +275,8 @@ int read_png_chunk(FILE *file, struct png_chunk *chunk) {
 error:
   if (chunk->chunk_data) {
     free(chunk->chunk_data);
-    chunk->chunk_data = NULL; // BUG-1 - set here to null to avoid double free
-                              // in load_png success or error roads
+    chunk->chunk_data = NULL; // BUG-AFL-00 - set here to null to avoid double
+                              // free in load_png success or error roads
   }
   return 1;
 }
@@ -416,13 +416,13 @@ struct image *convert_color_palette_to_image(png_chunk_ihdr *ihdr_chunk,
   }
 
   for (uint32_t idy = 0; idy < height; idy++) {
-    // BUG-3 - added bound check to prevent overflow in inflated_buf
+    // BUG-AFL-02 - added bound check to prevent overflow in inflated_buf
     // Filter byte at the start of every scanline needs to be 0
     if (idy * (1 + width) >= inflated_size || inflated_buf[idy * (1 + width)]) {
       goto error;
     }
     for (uint32_t idx = 0; idx < width; idx++) {
-      // BUG-3 - added bound check to prevent overflow in inflated_buf
+      // BUG-AFL-02
       if (idy * (1 + width) + idx + 1 >= inflated_size ||
           idy * img->size_x + idx >= img->size_x * img->size_y) {
         goto error;
@@ -475,7 +475,9 @@ struct image *convert_rgb_alpha_to_image(png_chunk_ihdr *ihdr_chunk,
 
   for (uint32_t idy = 0; idy < height; idy++) {
     // The filter byte at the start of every scanline needs to be 0
-    if (inflated_buf[idy * (1 + 4 * width)]) {
+    // BUG-AFL-04 - check for buffer overflow
+    if (idy * (1 + 4 * width) >= inflated_size ||
+        inflated_buf[idy * (1 + 4 * width)]) {
       goto error;
     }
 
@@ -503,8 +505,8 @@ error:
     }
     free(img);
   }
-  return NULL; // BUG-4 - return NULL to ensure there is not "use after free" in
-               // size
+  return NULL; // BUG-AFL-03 - return NULL to ensure there is not "use after
+               // free" in size
 }
 
 /* Creates magic unicorns */
@@ -730,13 +732,12 @@ int load_png(const char *filename, struct image **img) {
     goto error;
   }
 
-  // fprintf(stderr, "Passed the png parsing\n");
 success:
   fclose(input);
 
   if (deflated_buf)
     free(deflated_buf);
-
+  // BUG-AFL-01 - avoid memory leak by freeing all buffer at end
   if (inflated_buf) {
     free(inflated_buf);
   }
@@ -748,8 +749,7 @@ success:
     free(current_chunk);
   }
 
-  // BUG-2 - for success and error roads, also free the inner chunk_data buffers
-  // to avoid memory leaks
+  // BUG-AFL-01
   if (plte_chunk) {
     if (plte_chunk->chunk_data) {
       free(plte_chunk->chunk_data);
@@ -774,7 +774,6 @@ success:
   return 0;
 
 error:
-  // fprintf(stderr, "Reached the error block\n");
   if (input) {
     fclose(input);
   }
@@ -782,6 +781,7 @@ error:
   if (deflated_buf)
     free(deflated_buf);
 
+  // BUG-AFL-01
   if (inflated_buf) {
     free(inflated_buf);
   }
