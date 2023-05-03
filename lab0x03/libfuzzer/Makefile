@@ -4,7 +4,7 @@ override CFLAGS += -g -w -O3 -fsanitize=fuzzer,address
 all: libpngparser fuzzer_load_png fuzzer_load_png_name fuzzer_store_png_rgba fuzzer_store_png_palette fuzzer_load_png_custom_mutator fuzzer_store_png_rgba_custom_mutator fuzzer_store_png_palette_custom_mutator
 
 clean:
-	rm -f libpngparser.a fuzzer_load_png fuzzer_load_png_name fuzzer_store_png_rgba fuzzer_store_png_palette fuzzer_load_png_custom_mutator fuzzer_store_png_rgba_custom_mutator fuzzer_store_png_palette_custom_mutator size *.o
+	rm -f libpngparser.a fuzzer_load_png fuzzer_load_png_name fuzzer_store_png_rgba fuzzer_store_png_palette fuzzer_load_png_custom_mutator fuzzer_store_png_rgba_custom_mutator fuzzer_store_png_palette_custom_mutator *.o
 
 .PHONY: all clean
 
@@ -53,5 +53,5 @@ fuzzer_store_png_palette_custom_mutator: fuzzer_store_png_palette.cc libpngparse
 check: libpngparser fuzzer_load_png fuzzer_load_png_name fuzzer_store_png_rgba fuzzer_store_png_palette fuzzer_load_png_custom_mutator fuzzer_store_png_rgba_custom_mutator fuzzer_store_png_rgba_custom_mutator
 	./fuzzer_load_png example_crash
 
-size: libpngparser size.c
-	clang -g -w -O3 -fsanitize=address -o size size.c libpngparser.a -lz
+# size: libpngparser size.c
+# 	clang -g -w -O3 -fsanitize=address -o size size.c libpngparser.a -lz
