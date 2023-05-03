@@ -250,7 +250,8 @@ int read_png_chunk(FILE *file, struct png_chunk *chunk) {
 
   chunk->length = to_little_endian(chunk->length);
 
-  // BUG-4 - avoid out of memory errors by checking the size before allocating
+  // BUG-LIB-00 - avoid out of memory errors by checking the size before
+  // allocating
   if (chunk->length > PNG_OUTPUT_CHUNK_SIZE) {
     goto error;
   }
@@ -283,8 +284,8 @@ int read_png_chunk(FILE *file, struct png_chunk *chunk) {
 error:
   if (chunk->chunk_data) {
     free(chunk->chunk_data);
-    chunk->chunk_data = NULL; // BUG-1 - set here to null to avoid double free
-                              // in load_png success or error roads
+    chunk->chunk_data = NULL; // BUG-AFL-00 - set here to null to avoid double
+                              // free in load_png success or error roads
   }
   return 1;
 }
@@ -405,7 +406,7 @@ struct image *convert_color_palette_to_image(png_chunk_ihdr *ihdr_chunk,
   uint32_t width = ihdr_header->width;
   uint32_t palette_idx = 0;
 
-  // BUG-7 - avoid dereferencing NULL pointer
+  // BUG-LIB-02 - avoid dereferencing NULL pointer
   if (!plte_chunk || !plte_chunk->chunk_data) {
     return NULL;
   }
@@ -428,18 +429,18 @@ struct image *convert_color_palette_to_image(png_chunk_ihdr *ihdr_chunk,
   }
 
   for (uint32_t idy = 0; idy < height; idy++) {
-    // BUG-3 - added bound check to prevent overflow in inflated_buf
+    // BUG-AFL-02 - added bound check to prevent overflow in inflated_buf
     // Filter byte at the start of every scanline needs to be 0
     if (idy * (1 + width) >= inflated_size || inflated_buf[idy * (1 + width)]) {
       goto error;
     }
     for (uint32_t idx = 0; idx < width; idx++) {
-      // BUG-3 - added bound check to prevent overflow in inflated_buf
+      // BUG-AFL-02
       if (idy * (1 + width) + idx + 1 >= inflated_size) {
         goto error;
       }
       palette_idx = inflated_buf[idy * (1 + width) + idx + 1];
-      // BUG - 10 - Bound check on plte_entries to avoid overflow
+      // BUG-LIB-05 - Bound check on plte_entries to avoid overflow
       if (palette_idx >= plte_chunk->length / 3 ||
           idy * img->size_x + idx >= img->size_x * img->size_y) {
         goto error;
@@ -491,7 +492,9 @@ struct image *convert_rgb_alpha_to_image(png_chunk_ihdr *ihdr_chunk,
 
   for (uint32_t idy = 0; idy < height; idy++) {
     // The filter byte at the start of every scanline needs to be 0
-    if (inflated_buf[idy * (1 + 4 * width)]) {
+    // BUG-AFL-04 - check for buffer overflow
+    if (idy * (1 + 4 * width) >= inflated_size ||
+        inflated_buf[idy * (1 + 4 * width)]) {
       goto error;
     }
 
@@ -519,8 +522,8 @@ error:
     }
     free(img);
   }
-  return NULL; // BUG-4 - return NULL to ensure there is not "use after free" in
-               // size
+  return NULL; // BUG-AFL-03 - return NULL to ensure there is not "use after
+               // free" in size
 }
 
 /* Creates magic unicorns */
@@ -605,8 +608,8 @@ int load_png(const char *filename, struct image **img) {
 
   struct png_chunk *current_chunk = calloc(
       1,
-      sizeof(struct png_chunk)); // BUG-0 - initialize to a non garbage value in
-                                 // case we go through the error road quickly
+      sizeof(struct png_chunk)); // BUG - initialize to a non garbage value
+                                 // in case we go through the error road quickly
   FILE *input = fopen(filename, "rb");
 
   // Has the file been open properly?
@@ -775,7 +778,7 @@ success:
   if (deflated_buf)
     free(deflated_buf);
 
-  // BUG-2 - avoid memory leak by freeing all buffer at end
+  // BUG-AFL-01 - avoid memory leak by freeing all buffer at end
   if (inflated_buf) {
     free(inflated_buf);
   }
@@ -787,7 +790,7 @@ success:
     free(current_chunk);
   }
 
-  // BUG-2
+  // BUG-AFL-01
   if (plte_chunk) {
     if (plte_chunk->chunk_data) {
       free(plte_chunk->chunk_data);
@@ -822,7 +825,7 @@ success:
   return 0;
 
 error:
-  // BUG-6 - prevent closing if pointer is NULL
+  // BUG-LIB-01 - prevent closing if pointer is NULL
   if (input) {
     fclose(input);
   }
@@ -830,7 +833,7 @@ error:
   if (deflated_buf)
     free(deflated_buf);
 
-  // BUG-2
+  // BUG-AFL-01
   if (inflated_buf) {
     free(inflated_buf);
   }
@@ -842,7 +845,7 @@ error:
     free(current_chunk);
   }
 
-  // BUG-2
+  // BUG-AFL-01
   if (plte_chunk) {
     if (plte_chunk->chunk_data) {
       free(plte_chunk->chunk_data);
@@ -1036,7 +1039,7 @@ int store_idat_rgb_alpha(FILE *output, struct image *img) {
   uint8_t *non_compressed_buf = malloc(non_compressed_length);
 
   for (uint32_t id_y = 0; id_y <= img->size_y; id_y++) {
-    // BUG-11 - bound check to avoid buffer overflow
+    // BUG-LIB-06 - bound check to avoid buffer overflow
     if (id_y * (1 + img->size_x * 4) >= non_compressed_length) {
       goto error;
     }
@@ -1044,7 +1047,7 @@ int store_idat_rgb_alpha(FILE *output, struct image *img) {
     for (uint32_t id_x = 0; id_x < img->size_x; id_x++) {
       uint32_t id_pix_buf = id_y * (1 + img->size_x * 4) + 1 + 4 * id_x;
       uint32_t id_pix = id_y * img->size_x + id_x;
-      // BUG-11
+      // BUG-LIB-06
       if (id_pix_buf + 3 >= non_compressed_length ||
           id_pix >= img->size_x * img->size_y) {
         goto error;
@@ -1070,7 +1073,7 @@ int store_idat_rgb_alpha(FILE *output, struct image *img) {
 
   return 0;
 
-// Added for BUG-11 handling
+// Added for BUG-LIB-06 handling
 error:
   if (non_compressed_buf) {
     free(non_compressed_buf);
@@ -1098,7 +1101,7 @@ int store_idat_plte(FILE *output, struct image *img, struct pixel *palette,
                     uint32_t palette_length) {
   uint32_t non_compressed_length = img->size_y * (1 + img->size_x);
   uint8_t *non_compressed_buf = malloc(non_compressed_length);
-  // BUG-9 initialize before going to error to avoid freeing unallocated memory
+  // BUG-LIB-03 initialize before going to error to avoid freeing unallocated
   uint8_t *compressed_data_buf = NULL;
 
   for (uint32_t id_y = 0; id_y < img->size_y; id_y++) {
@@ -1114,7 +1117,7 @@ int store_idat_plte(FILE *output, struct image *img, struct pixel *palette,
     }
   }
 
-  // BUG-9
+  // BUG-LIB-03
   uint32_t compressed_length;
 
   compress_png_data(non_compressed_buf, non_compressed_length,
@@ -1126,7 +1129,7 @@ int store_idat_plte(FILE *output, struct image *img, struct pixel *palette,
   return 0;
 
 error:
-  // BUG-12 - avoid memory leak by freeing all allocated buffers
+  // BUG-LIB-04 - avoid memory leak by freeing all allocated buffers
   if (non_compressed_buf) {
     free(non_compressed_buf);
   }
